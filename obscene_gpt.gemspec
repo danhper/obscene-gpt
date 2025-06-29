@@ -8,15 +8,14 @@ Gem::Specification.new do |spec|
 
   spec.summary = "A Ruby gem that uses OpenAI API to detect obscene content in text"
   spec.description = "ObsceneGpt is a Ruby gem that integrates with OpenAI's API to detect whether given text contains obscene, inappropriate, or NSFW content. It provides a simple interface for content moderation using AI." # rubocop:disable Layout/LineLength
-  spec.homepage = "https://github.com/danhper/obscene_gpt"
+  spec.homepage = "https://github.com/danhper/obscene-gpt"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.1.0"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/danhper/obscene_gpt"
-  spec.metadata["changelog_uri"] = "https://github.com/danhper/obscene_gpt/blob/main/CHANGELOG.md"
+  spec.metadata["changelog_uri"] = "https://github.com/danhper/obscene-gpt/blob/main/CHANGELOG.md"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
