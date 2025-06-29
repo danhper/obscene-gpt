@@ -24,7 +24,7 @@ module ObsceneGpt
     def detect_many(texts)
       response = @client.responses.create(parameters: make_query(texts))
 
-      JSON.parse(response.dig("output", 0, "content", 0, "text"))["results"]
+      JSON.parse(response.dig("output", 0, "content", 0, "text"))["results"].map { |r| r.transform_keys(&:to_sym) }
     rescue OpenAI::Error, Faraday::Error => e
       body = e.respond_to?(:response) ? e.response[:body] : ""
       raise ObsceneGpt::Error, "OpenAI API error: #{e.message}\n#{body}"

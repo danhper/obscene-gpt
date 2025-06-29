@@ -32,5 +32,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "ruby-openai", "~> 8.1"
+
   spec.metadata["rubygems_mfa_required"] = "true"
 end

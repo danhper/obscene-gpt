@@ -47,6 +47,8 @@ detector = ObsceneGpt::Detector.new(api_key: "your-openai-api-key-here")
 
 ## Usage
 
+### Basic Usage
+
 ```ruby
 require 'obscene_gpt'
 
@@ -66,6 +68,27 @@ result = detector.detect("Some offensive text with BAAD words")
 puts result
 # => {"obscene" => true, "confidence" => 0.85, "reasoning" => "The text contains vulgar language with the word 'BAAD', which is likely intended as a vulgar or inappropriate term.", "categories" => ["profanity"]}
 ```
+
+### ActiveModel Validator
+
+When ActiveModel is available, you can use the built-in validator to automatically check for obscene content in your models:
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :content, obscene_content: true
+  validates :title, obscene_content: { message: "Title contains inappropriate language" }
+end
+
+# The validator automatically caches results to avoid duplicate API calls
+post = Post.new(content: "Some potentially inappropriate content")
+if post.valid?
+  puts "Post is valid"
+else
+  puts "Validation errors: #{post.errors.full_messages}"
+end
+```
+
+**Important:** The validator uses Rails caching to ensure only one API call is made per unique text content. Results are cached for 1 hour to avoid repeated API calls for the same content.
 
 ## API Reference
 
@@ -118,6 +141,31 @@ Detects whether the given texts contain obscene content.
 **Raises:**
 - `ObsceneGpt::Error`: If there's an OpenAI API error
 
+### ObsceneGpt::ObsceneContentValidator
+
+**Note:** This validator is only available when ActiveRecord is loaded.
+
+A custom ActiveRecord validator that checks whether a field contains obscene content.
+
+#### Usage
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :content, obscene_content: true
+  validates :title, obscene_content: { message: "Custom error message" }
+end
+```
+
+#### Options
+
+- `message` (String): Custom error message to display when validation fails. Default: "contains inappropriate content"
+
+#### Features
+
+- **Caching:** Automatically caches results using Rails cache to avoid duplicate API calls for the same content
+- **Cache Duration:** Results are cached for 1 hour
+- **Error Handling:** Gracefully handles cache and API errors without failing validation
+- **Performance:** Only makes one API call per unique text content
 
 ## Response Format
 

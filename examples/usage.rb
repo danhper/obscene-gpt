@@ -25,3 +25,19 @@ detector.detect_many(texts_to_analyze).each_with_index do |result, index|
   puts "Categories: #{result["categories"]}"
   puts "--------------------------------"
 end
+
+# ActiveRecord validator usage (when ActiveRecord is available)
+if defined?(ActiveRecord)
+  class Post < ActiveRecord::Base
+    validates :content, obscene_content: true
+    validates :title, obscene_content: { message: "Title contains inappropriate language" }
+  end
+
+  # The validator will automatically cache results to avoid duplicate API calls
+  post = Post.new(content: "Some potentially inappropriate content")
+  if post.valid?
+    puts "Post is valid"
+  else
+    puts "Validation errors: #{post.errors.full_messages}"
+  end
+end

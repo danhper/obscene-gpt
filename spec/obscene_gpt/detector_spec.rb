@@ -58,10 +58,10 @@ RSpec.describe ObsceneGpt::Detector do
       result = detector.detect("Hello, how are you today?")
 
       expect(result).to be_a(Hash)
-      expect(result["obscene"]).to be false
-      expect(result["confidence"]).to eq(0.95)
-      expect(result["reasoning"]).to eq("Clean text")
-      expect(result["categories"]).to eq([])
+      expect(result[:obscene]).to be false
+      expect(result[:confidence]).to eq(0.95)
+      expect(result[:reasoning]).to eq("Clean text")
+      expect(result[:categories]).to eq([])
     end
 
     it "handles OpenAI API errors" do
@@ -103,8 +103,8 @@ RSpec.describe ObsceneGpt::Detector do
 
       expect(results).to be_an(Array)
       expect(results.length).to eq(2)
-      expect(results[0]["obscene"]).to be false
-      expect(results[1]["obscene"]).to be true
+      expect(results[0][:obscene]).to be false
+      expect(results[1][:obscene]).to be true
     end
   end
 
@@ -125,10 +125,10 @@ RSpec.describe ObsceneGpt::Detector do
       allow(detector.client).to receive(:responses).and_return(double(create: mock_response))
 
       result = detector.detect("test")
-      expect(result["obscene"]).to be true
-      expect(result["confidence"]).to eq(0.8)
-      expect(result["reasoning"]).to eq("Test")
-      expect(result["categories"]).to eq(["profanity"])
+      expect(result[:obscene]).to be true
+      expect(result[:confidence]).to eq(0.8)
+      expect(result[:reasoning]).to eq("Test")
+      expect(result[:categories]).to eq(["profanity"])
     end
 
     it "handles API errors with response body" do
