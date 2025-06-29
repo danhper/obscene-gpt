@@ -1,3 +1,9 @@
+begin
+  require "active_model"
+rescue LoadError
+  # do nothing
+end
+
 if defined?(ActiveModel)
   class ObsceneContentValidator < ActiveModel::EachValidator
     def validate(record)
