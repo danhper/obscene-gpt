@@ -27,11 +27,13 @@ gem install obscene_gpt
 You'll need an OpenAI API key to use this gem. You can either:
 
 1. Set it as an environment variable:
+
 ```bash
 export OPENAI_API_KEY="your-openai-api-key-here"
 ```
 
 2. Configure it globally in your application (recommended):
+
 ```ruby
 ObsceneGpt.configure do |config|
   config.api_key = "your-openai-api-key-here"
@@ -46,6 +48,8 @@ detector = ObsceneGpt::Detector.new(api_key: "your-openai-api-key-here")
 ```
 
 ## Usage
+
+See the `examples/usage.rb` file for usage examples.
 
 ### Basic Usage
 
@@ -77,6 +81,11 @@ When ActiveModel is available, you can use the built-in validator to automatical
 class Post < ActiveRecord::Base
   validates :content, obscene_content: true
   validates :title, obscene_content: { message: "Title contains inappropriate language" }
+  validates :description, obscene_content: { threshold: 0.9 }
+  validates :comment, obscene_content: {
+    threshold: 0.8,
+    message: "Comment violates community guidelines"
+  }
 end
 
 # The validator automatically caches results to avoid duplicate API calls
@@ -122,11 +131,13 @@ Creates a new detector instance.
 Detects whether the given text contains obscene content.
 
 **Parameters:**
+
 - `text` (String): Text to analyze.
 
 **Returns:** Hash with detection results. See `Response Format` for more details.
 
 **Raises:**
+
 - `ObsceneGpt::Error`: If there's an OpenAI API error
 
 #### ObsceneGpt::Detector#detect_many(texts)
@@ -134,38 +145,14 @@ Detects whether the given text contains obscene content.
 Detects whether the given texts contain obscene content.
 
 **Parameters:**
+
 - `texts` (Array<String>): Texts to analyze.
 
 **Returns:** Array of hashes with detection results. See `Response Format` for more details.
 
 **Raises:**
+
 - `ObsceneGpt::Error`: If there's an OpenAI API error
-
-### ObsceneGpt::ObsceneContentValidator
-
-**Note:** This validator is only available when ActiveRecord is loaded.
-
-A custom ActiveRecord validator that checks whether a field contains obscene content.
-
-#### Usage
-
-```ruby
-class Post < ActiveRecord::Base
-  validates :content, obscene_content: true
-  validates :title, obscene_content: { message: "Custom error message" }
-end
-```
-
-#### Options
-
-- `message` (String): Custom error message to display when validation fails. Default: "contains inappropriate content"
-
-#### Features
-
-- **Caching:** Automatically caches results using Rails cache to avoid duplicate API calls for the same content
-- **Cache Duration:** Results are cached for 1 hour
-- **Error Handling:** Gracefully handles cache and API errors without failing validation
-- **Performance:** Only makes one API call per unique text content
 
 ## Response Format
 
@@ -222,9 +209,116 @@ You can use a custom schema if you need to by setting the `schema` option in the
 2. Global configuration
 3. Environment variables (for API key only)
 
-## Examples
+## ActiveModel Integration
 
-See the `examples/usage.rb` file for usage examples.
+The `ObsceneContentValidator` is available when ActiveModel is loaded.
+`active_model` needs to be required before obscene_gpt.
+
+### Usage
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :content, :title, :description, obscene_content: true
+end
+```
+
+**Note**: Each instance of this validator will make a request to the OpenAI API.
+Therefore, it is recommended to pass all the attributes you want to check to the validator at once as shown above.
+
+### Options
+
+- `threshold` (Float): Custom confidence threshold (0.0-1.0) for determining when content is considered inappropriate. Default: Uses `ObsceneGpt.configuration.profanity_threshold`
+- `message` (String): Custom error message to display when validation fails. Default: Uses AI reasoning if available, otherwise "contains inappropriate content"
+
+### Per-Attribute Options
+
+You can also configure different options for different attributes in a single validation call:
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :title, :content, obscene_content: {
+    title: { threshold: 0.8, message: "Title is too inappropriate" },
+    content: { threshold: 0.7, message: "Content needs moderation" }
+  }
+end
+```
+
+### Configuration Precedence
+
+The validator uses the following precedence for options:
+
+**Threshold:**
+
+1. Per-attribute option (e.g., `title: { threshold: 0.8 }`)
+2. Validator option (e.g., `threshold: 0.8`)
+3. Configuration default (`ObsceneGpt.configuration.profanity_threshold`)
+
+**Message:**
+
+1. Per-attribute message (e.g., `title: { message: "..." }`)
+2. Global message (e.g., `message: "..."`)
+3. AI reasoning (if available, only when schema is `ObsceneGpt::Prompts::FULL_SCHEMA`)
+4. Default message ("contains inappropriate content")
+
+### Examples
+
+**Basic validation:**
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :content, obscene_content: true
+end
+```
+
+**With custom message:**
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :title, obscene_content: { message: "Title contains inappropriate content" }
+end
+```
+
+**With custom threshold:**
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :description, obscene_content: { threshold: 0.9 }
+end
+```
+
+**With both custom threshold and message:**
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :comment, obscene_content: {
+    threshold: 0.8,
+    message: "Comment violates community guidelines"
+  }
+end
+```
+
+**Per-attribute configuration:**
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :title, :content, obscene_content: {
+    title: { threshold: 0.8, message: "Title is too inappropriate" },
+    content: { threshold: 0.7, message: "Content needs moderation" }
+  }
+end
+```
+
+**Mixed global and per-attribute options:**
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :title, :content, obscene_content: {
+    threshold: 0.8,  # Global threshold
+    message: "Contains inappropriate content",  # Global message
+    title: { threshold: 0.9 }  # Override threshold for title only
+  }
+end
+```
 
 ## Development
 
