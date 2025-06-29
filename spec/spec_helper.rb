@@ -1,3 +1,4 @@
+require "active_model"
 require "obscene_gpt"
 
 RSpec.configure do |config|
