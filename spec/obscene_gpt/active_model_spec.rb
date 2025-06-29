@@ -214,6 +214,123 @@ RSpec.describe ObsceneContentValidator do
       end
     end
 
+    context "with custom error messages" do
+      before do
+        test_model_class.validates :title, obscene_content: true
+        test_model_class.validates :content, obscene_content: true
+        record.title = "Bad title"
+        record.content = "Bad content"
+      end
+
+      it "uses custom message when provided" do
+        allow(ObsceneGpt).to receive(:detect_many).and_return(
+          [
+            { obscene: true, confidence: 0.85, reasoning: "Contains inappropriate language" },
+          ],
+        )
+
+        # Create validator with custom message
+        validator = ObsceneContentValidator.new(
+          attributes: [:title],
+          message: "This content is not allowed",
+        )
+
+        validator.validate(record)
+
+        expect(record.errors[:title]).to include("This content is not allowed")
+      end
+
+      it "uses per-attribute custom messages" do
+        allow(ObsceneGpt).to receive(:detect_many).and_return(
+          [
+            { obscene: true, confidence: 0.85, reasoning: "Contains inappropriate language" },
+            { obscene: true, confidence: 0.9, reasoning: "Contains profanity" },
+          ],
+        )
+
+        # Create validator with per-attribute messages
+        validator = ObsceneContentValidator.new(
+          attributes: %i[title content],
+          title: { message: "Title contains inappropriate content" },
+          content: { message: "Content violates community guidelines" },
+        )
+
+        validator.validate(record)
+
+        expect(record.errors[:title]).to include("Title contains inappropriate content")
+        expect(record.errors[:content]).to include("Content violates community guidelines")
+      end
+
+      it "falls back to reasoning when no custom message is provided" do
+        allow(ObsceneGpt).to receive(:detect_many).and_return(
+          [
+            { obscene: true, confidence: 0.85, reasoning: "Contains inappropriate language" },
+          ],
+        )
+
+        validator = ObsceneContentValidator.new(attributes: [:title])
+        validator.validate(record)
+
+        expect(record.errors[:title]).to include("Contains inappropriate language")
+      end
+
+      it "falls back to default message when no reasoning is provided" do
+        allow(ObsceneGpt).to receive(:detect_many).and_return(
+          [
+            { obscene: true, confidence: 0.85, reasoning: nil },
+          ],
+        )
+
+        validator = ObsceneContentValidator.new(attributes: [:title])
+        validator.validate(record)
+
+        expect(record.errors[:title]).to include("contains inappropriate content")
+      end
+
+      it "prioritizes custom message over reasoning" do
+        allow(ObsceneGpt).to receive(:detect_many).and_return(
+          [
+            { obscene: true, confidence: 0.85, reasoning: "Contains inappropriate language" },
+          ],
+        )
+
+        # Create validator with custom message
+        validator = ObsceneContentValidator.new(
+          attributes: [:title],
+          message: "Custom error message",
+        )
+
+        validator.validate(record)
+
+        # Should use custom message, not the reasoning
+        expect(record.errors[:title]).to include("Custom error message")
+        expect(record.errors[:title]).not_to include("Contains inappropriate language")
+      end
+
+      it "combines custom messages with custom thresholds" do
+        allow(ObsceneGpt).to receive(:detect_many).and_return(
+          [
+            { obscene: true, confidence: 0.75, reasoning: "Somewhat inappropriate" },
+            { obscene: true, confidence: 0.85, reasoning: "More inappropriate" },
+          ],
+        )
+
+        # Create validator with both custom thresholds and messages
+        validator = ObsceneContentValidator.new(
+          attributes: %i[title content],
+          title: { threshold: 0.8, message: "Title is too inappropriate" },
+          content: { threshold: 0.7, message: "Content needs moderation" },
+        )
+
+        validator.validate(record)
+
+        # title should not have error (0.75 < 0.8)
+        expect(record.errors[:title]).to be_empty
+        # content should have error (0.85 >= 0.7) with custom message
+        expect(record.errors[:content]).to include("Content needs moderation")
+      end
+    end
+
     context "with nil and blank values" do
       before do
         test_model_class.validates :title, :content, :description, obscene_content: true

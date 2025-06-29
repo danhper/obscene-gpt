@@ -25,7 +25,7 @@ if defined?(ActiveModel)
         threshold = option_for(:threshold, attribute, ObsceneGpt.configuration.profanity_threshold)
 
         if result[:obscene] && result[:confidence] >= threshold
-          message = result[:reasoning] || "contains inappropriate content"
+          message = option_for(:message, attribute, result[:reasoning] || "contains inappropriate content")
           record.errors.add(attribute, :obscene_content, message: message)
         end
       end
