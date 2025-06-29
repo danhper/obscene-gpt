@@ -12,6 +12,8 @@ RSpec.describe ObsceneGpt::Configuration do
       expect(ObsceneGpt.configuration.model).to eq("gpt-4.1-nano")
       expect(ObsceneGpt.configuration.prompt).to eq(ObsceneGpt::Prompts::SYSTEM_PROMPT)
       expect(ObsceneGpt.configuration.schema).to eq(ObsceneGpt::Prompts::SIMPLE_SCHEMA)
+      expect(ObsceneGpt.configuration.test_mode).to be false
+      expect(ObsceneGpt.configuration.test_detector_class).to eq(ObsceneGpt::TestDetector)
     end
   end
 
@@ -22,12 +24,16 @@ RSpec.describe ObsceneGpt::Configuration do
         config.model = "gpt-3.5-turbo"
         config.schema = { type: "object" }
         config.prompt = "Custom prompt"
+        config.test_mode = true
+        config.test_detector_class = String
       end
 
       expect(ObsceneGpt.configuration.api_key).to eq("custom-key")
       expect(ObsceneGpt.configuration.model).to eq("gpt-3.5-turbo")
       expect(ObsceneGpt.configuration.schema).to eq({ type: "object" })
       expect(ObsceneGpt.configuration.prompt).to eq("Custom prompt")
+      expect(ObsceneGpt.configuration.test_mode).to be true
+      expect(ObsceneGpt.configuration.test_detector_class).to eq(String)
     end
   end
 
@@ -53,6 +59,22 @@ RSpec.describe ObsceneGpt::Configuration do
       custom_prompt = "Custom moderation prompt"
       ObsceneGpt.configuration.prompt = custom_prompt
       expect(ObsceneGpt.configuration.prompt).to eq(custom_prompt)
+    end
+
+    it "allows setting and getting test_mode" do
+      ObsceneGpt.configuration.test_mode = true
+      expect(ObsceneGpt.configuration.test_mode).to be true
+
+      ObsceneGpt.configuration.test_mode = false
+      expect(ObsceneGpt.configuration.test_mode).to be false
+    end
+
+    it "allows setting and getting test_detector_class" do
+      ObsceneGpt.configuration.test_detector_class = String
+      expect(ObsceneGpt.configuration.test_detector_class).to eq(String)
+
+      ObsceneGpt.configuration.test_detector_class = ObsceneGpt::TestDetector
+      expect(ObsceneGpt.configuration.test_detector_class).to eq(ObsceneGpt::TestDetector)
     end
   end
 end

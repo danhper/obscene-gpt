@@ -22,12 +22,12 @@ module ObsceneGpt
     #   - :reasoning [String] Explanation for the classification (only for full schema)
     #   - :categories [Array<String>] Categories of inappropriate content found (only for full schema)
     def detect_many(texts)
-      response = @client.responses.create(parameters: make_query(texts))
+      if ObsceneGpt.configuration.test_mode
+        test_detector = ObsceneGpt.configuration.test_detector_class.new(schema: @schema)
+        return test_detector.detect_many(texts)
+      end
 
-      JSON.parse(response.dig("output", 0, "content", 0, "text"))["results"].map { |r| r.transform_keys(&:to_sym) }
-    rescue OpenAI::Error, Faraday::Error => e
-      body = e.respond_to?(:response) ? e.response[:body] : ""
-      raise ObsceneGpt::Error, "OpenAI API error: #{e.message}\n#{body}"
+      run_detect_many(texts)
     end
 
     # Detects whether the given text contains obscene content
@@ -37,6 +37,15 @@ module ObsceneGpt
     end
 
     private
+
+    def run_detect_many(texts)
+      response = @client.responses.create(parameters: make_query(texts))
+
+      JSON.parse(response.dig("output", 0, "content", 0, "text"))["results"].map { |r| r.transform_keys(&:to_sym) }
+    rescue OpenAI::Error, Faraday::Error => e
+      body = e.respond_to?(:response) ? e.response[:body] : ""
+      raise ObsceneGpt::Error, "OpenAI API error: #{e.message}\n#{body}"
+    end
 
     def make_query(texts)
       text_format = { name: "content-moderation", type: "json_schema", schema: make_schema(texts.length), strict: true }

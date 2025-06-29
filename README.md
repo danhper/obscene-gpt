@@ -178,7 +178,66 @@ config.api_key = ENV["OPENAI_API_KEY"]
 config.model = "gpt-4.1-nano"
 config.schema = ObsceneGpt::Prompts::SIMPLE_SCHEMA
 config.prompt = ObsceneGpt::Prompts::SYSTEM_PROMPT
+config.test_mode = false
+config.test_detector_class = ObsceneGpt::TestDetector
 ```
+
+### Test Mode
+
+To avoid making API calls during testing, you can enable test mode:
+
+```ruby
+ObsceneGpt.configure do |config|
+  config.test_mode = true
+end
+```
+
+When test mode is enabled, the detector will return mock responses based on simple pattern matching instead of making actual API calls. This is useful for:
+
+- Running tests without API costs
+- Faster test execution
+- Avoiding rate limits during development
+
+**Note:** Test mode uses basic pattern matching and is not as accurate as the actual AI model. It's intended for testing purposes only.
+
+#### Custom Test Detectors
+
+You can also configure a custom test detector class for more sophisticated test behavior:
+
+```ruby
+class MyCustomTestDetector
+  attr_reader :schema
+
+  def initialize(schema: nil)
+    @schema = schema || ObsceneGpt::Prompts::SIMPLE_SCHEMA
+  end
+
+  def detect_many(texts)
+    texts.map do |text|
+      {
+        obscene: text.include?("bad_word"),
+        confidence: 0.9
+      }
+    end
+  end
+
+  def detect(text)
+    detect_many([text])[0]
+  end
+end
+
+ObsceneGpt.configure do |config|
+  config.test_mode = true
+  config.test_detector_class = MyCustomTestDetector
+end
+```
+
+Custom test detectors must implement:
+
+- `#initialize(schema: nil)` - Accepts an optional schema parameter
+- `#detect_many(texts)` - Returns an array of result hashes
+
+See `examples/custom_test_detector.rb` for more examples.
 
 ### Model
 
