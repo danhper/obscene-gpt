@@ -19,10 +19,10 @@ texts_to_analyze = [
 
 detector.detect_many(texts_to_analyze).each_with_index do |result, index|
   puts "Text: #{texts_to_analyze[index]}"
-  puts "Obscene: #{result["obscene"]}"
-  puts "Confidence: #{result["confidence"]}"
-  puts "Reasoning: #{result["reasoning"]}"
-  puts "Categories: #{result["categories"]}"
+  puts "Obscene: #{result[:obscene]}"
+  puts "Confidence: #{result[:confidence]}"
+  puts "Reasoning: #{result[:reasoning]}"
+  puts "Categories: #{result[:categories]}"
   puts "--------------------------------"
 end
 

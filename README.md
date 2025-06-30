@@ -99,6 +99,26 @@ end
 
 **Important:** The validator uses Rails caching to ensure only one API call is made per unique text content. Results are cached for 1 hour to avoid repeated API calls for the same content.
 
+## Important considerations
+
+### Cost
+
+The cost of using this gem is based on the number of API calls made.
+A very short input text will have roughly 170 tokens, and each 200 characters adds roughly another 50 tokens.
+The simple schema has 17 output tokens and the full schema has ~50 (depending on the length of the reasoning and the attributes).
+Using the simple schema and with an average of 200 chars per request, the cost (with the gpt-4.1-nano model) is roughly $1 per 35,000 requests.
+
+### Rate limits
+
+The OpenAI API has rate limits that depends on the model you are using.
+The gpt-4.1-nano model has a rate limit of 500 requests per minute with a normal paid subscription.
+
+### Latency
+
+Calling an API will obviously add some latency to your application.
+The latency is dependent on the model you are using and the length of the text you are analyzing.
+We do not recommend using this gem in latency-sensitive application.
+
 ## API Reference
 
 ### Configuration
