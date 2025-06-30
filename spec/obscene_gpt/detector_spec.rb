@@ -230,7 +230,7 @@ RSpec.describe ObsceneGpt::Detector do
         end
 
         def detect_many(texts)
-          texts.map { |text| { obscene: false, confidence: 0.9, schema: @schema } }
+          texts.map { |_| { obscene: false, confidence: 0.9, schema: @schema } }
         end
 
         def detect(text)
