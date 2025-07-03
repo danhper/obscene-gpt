@@ -10,7 +10,8 @@ module ObsceneGpt
   end
 
   class Configuration
-    attr_accessor :api_key, :model, :schema, :prompt, :profanity_threshold, :test_mode, :test_detector_class
+    attr_accessor :api_key, :model, :schema, :prompt, :profanity_threshold, :test_mode,
+                  :test_detector_class, :request_timeout
 
     def initialize
       @api_key = ENV.fetch("OPENAI_API_KEY", nil)
@@ -20,6 +21,7 @@ module ObsceneGpt
       @profanity_threshold = 0.8
       @test_mode = false
       @test_detector_class = TestDetector
+      @request_timeout = 10
     end
   end
 end

@@ -38,6 +38,7 @@ export OPENAI_API_KEY="your-openai-api-key-here"
 ObsceneGpt.configure do |config|
   config.api_key = "your-openai-api-key-here"
   config.model = "gpt-4.1-nano"
+  config.request_timeout = 5 # Optional, defaults to 10 seconds
 end
 ```
 

@@ -5,10 +5,13 @@ module ObsceneGpt
   class Detector
     attr_reader :client, :model, :schema, :prompt
 
-    def initialize(api_key: nil, model: nil, schema: nil, prompt: nil)
+    def initialize(api_key: nil, model: nil, schema: nil, prompt: nil, request_timeout: nil)
       api_key ||= ObsceneGpt.configuration.api_key
 
-      @client = OpenAI::Client.new(access_token: api_key)
+      @client = OpenAI::Client.new(
+        access_token: api_key,
+        request_timeout: request_timeout || ObsceneGpt.configuration.request_timeout,
+      )
       @model = model || ObsceneGpt.configuration.model
       @schema = schema || ObsceneGpt.configuration.schema
       @prompt = prompt || ObsceneGpt.configuration.prompt
