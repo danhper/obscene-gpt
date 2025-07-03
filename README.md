@@ -308,6 +308,7 @@ Therefore, it is recommended to pass all the attributes you want to check to the
 
 - `threshold` (Float): Custom confidence threshold (0.0-1.0) for determining when content is considered inappropriate. Default: Uses `ObsceneGpt.configuration.profanity_threshold`
 - `message` (String): Custom error message to display when validation fails. Default: Uses AI reasoning if available, otherwise "contains inappropriate content"
+- `ignore_errors` (Boolean): If true, the validator will not raise an error if the OpenAI API returns an error. Default: false
 
 ### Per-Attribute Options
 
@@ -346,6 +347,16 @@ The validator uses the following precedence for options:
 ```ruby
 class Post < ActiveRecord::Base
   validates :content, obscene_content: true
+end
+```
+
+**Basic validation with ignore_errors:**
+
+If there is an error from the OpenAI API, the validator will just skip the validation and not raise an error.
+
+```ruby
+class Post < ActiveRecord::Base
+  validates :content, obscene_content: { ignore_errors: true }
 end
 ```
 

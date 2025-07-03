@@ -12,6 +12,8 @@ if defined?(ActiveModel)
 
       results = ObsceneGpt.detect_many(to_validate.values)
       format_errors(record, to_validate, results)
+    rescue ObsceneGpt::Error => e
+      raise e unless options[:ignore_errors]
     end
 
     private
