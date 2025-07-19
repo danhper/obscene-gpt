@@ -22,6 +22,7 @@ if defined?(ActiveModel)
       attributes.map do |attribute|
         value = record.read_attribute_for_validation(attribute)
         next if value.nil? || value.blank?
+        next if record.respond_to?(:will_save_change_to_attribute?) && !record.will_save_change_to_attribute?(attribute)
 
         [attribute, prepare_value_for_validation(value, record, attribute)]
       end.compact.to_h
