@@ -23,7 +23,7 @@ RSpec.describe ObsceneGpt do
       config = ObsceneGpt.configuration
       expect(config).to be_a(ObsceneGpt::Configuration)
       expect(config.api_key).to eq(ENV.fetch("OPENAI_API_KEY", nil))
-      expect(config.model).to eq("gpt-4.1-nano")
+      expect(config.model).to eq("gpt-6-luna")
       expect(config.prompt).to eq(ObsceneGpt::Prompts::SYSTEM_PROMPT)
       expect(config.schema).to eq(ObsceneGpt::Prompts::SIMPLE_SCHEMA)
     end
@@ -56,7 +56,7 @@ RSpec.describe ObsceneGpt do
     it "allows overriding global configuration" do
       ObsceneGpt.configure do |config|
         config.api_key = "global-key"
-        config.model = "gpt-4.1-nano"
+        config.model = "gpt-6-luna"
       end
 
       detector = ObsceneGpt::Detector.new(api_key: "override-key", model: "gpt-3.5-turbo")

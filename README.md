@@ -37,7 +37,8 @@ export OPENAI_API_KEY="your-openai-api-key-here"
 ```ruby
 ObsceneGpt.configure do |config|
   config.api_key = "your-openai-api-key-here"
-  config.model = "gpt-4.1-nano"
+  config.model = "gpt-6-luna"
+  config.reasoning_effort = "low" # Optional, defaults to "none"
   config.request_timeout = 5 # Optional, defaults to 10 seconds
 end
 ```
@@ -60,7 +61,7 @@ require 'obscene_gpt'
 # Configure once in your app initialization
 ObsceneGpt.configure do |config|
   config.api_key = "your-openai-api-key-here"
-  config.model = "gpt-4.1-nano"
+  config.model = "gpt-6-luna"
 end
 
 detector = ObsceneGpt::Detector.new
@@ -131,7 +132,7 @@ Configure the gem globally.
 ```ruby
 ObsceneGpt.configure do |config|
   config.api_key = "your-api-key"
-  config.model = "gpt-4.1-nano"
+  config.model = "gpt-6-luna"
   config.schema = ObsceneGpt::Prompts::SIMPLE_SCHEMA
   config.prompt = ObsceneGpt::Prompts::SYSTEM_PROMPT
 end
@@ -143,9 +144,9 @@ Get the current configuration object.
 
 ### ObsceneGpt::Detector
 
-#### ObsceneGpt::Detector.new(api_key: nil, model: nil)
+#### ObsceneGpt::Detector.new(api_key: nil, model: nil, schema: nil, prompt: nil, request_timeout: nil, reasoning_effort: nil)
 
-Creates a new detector instance.
+Creates a new detector instance. Any option left as `nil` falls back to the global configuration.
 
 #### ObsceneGpt::Detector#detect(text)
 
@@ -196,7 +197,9 @@ The default configuration is:
 
 ```ruby
 config.api_key = ENV["OPENAI_API_KEY"]
-config.model = "gpt-4.1-nano"
+config.model = "gpt-6-luna"
+config.reasoning_effort = "none"
+config.request_timeout = 10
 config.schema = ObsceneGpt::Prompts::SIMPLE_SCHEMA
 config.prompt = ObsceneGpt::Prompts::SYSTEM_PROMPT
 config.test_mode = false
@@ -262,8 +265,24 @@ See `examples/custom_test_detector.rb` for more examples.
 
 ### Model
 
-We recommend using the `gpt-4.1-nano` model for cost efficiency.
+The default model is `gpt-6-luna`.
 Given the simplicity of the task, it's typically not necessary to use a more expensive model.
+
+### Reasoning effort
+
+The `reasoning_effort` option is sent to the OpenAI API as `reasoning: { effort: ... }`.
+It defaults to `"none"`, which keeps latency and cost low for this simple classification task.
+Supported values depend on the model (for `gpt-6-luna`: `none`, `low`, `medium`, `high`, `xhigh`, `max`).
+Set it to `nil` to omit the parameter entirely, e.g. when using a model that does not support reasoning.
+
+```ruby
+ObsceneGpt.configure do |config|
+  config.reasoning_effort = "low"
+end
+
+# Or per detector
+detector = ObsceneGpt::Detector.new(reasoning_effort: "medium")
+```
 
 See [OpenAI's documentation](https://platform.openai.com/docs/pricing) for more information.
 

@@ -3,9 +3,9 @@ require "openai"
 
 module ObsceneGpt
   class Detector
-    attr_reader :client, :model, :schema, :prompt
+    attr_reader :client, :model, :schema, :prompt, :reasoning_effort
 
-    def initialize(api_key: nil, model: nil, schema: nil, prompt: nil, request_timeout: nil)
+    def initialize(api_key: nil, model: nil, schema: nil, prompt: nil, request_timeout: nil, reasoning_effort: nil) # rubocop:disable Metrics/ParameterLists
       api_key ||= ObsceneGpt.configuration.api_key
 
       @client = OpenAI::Client.new(
@@ -15,6 +15,7 @@ module ObsceneGpt
       @model = model || ObsceneGpt.configuration.model
       @schema = schema || ObsceneGpt.configuration.schema
       @prompt = prompt || ObsceneGpt.configuration.prompt
+      @reasoning_effort = reasoning_effort || ObsceneGpt.configuration.reasoning_effort
     end
 
     # Detects whether the given texts contain obscene content
@@ -54,13 +55,13 @@ module ObsceneGpt
       text_format = { name: "content-moderation", type: "json_schema", schema: make_schema(texts.length), strict: true }
       {
         model: @model,
+        reasoning: @reasoning_effort && { effort: @reasoning_effort },
         text: { format: text_format },
         input: [{
           role: "user",
-          content: [{ type: "input_text", text: @prompt },
-                    { type: "input_text", text: JSON.dump(texts) }],
+          content: [{ type: "input_text", text: @prompt }, { type: "input_text", text: JSON.dump(texts) }],
         }],
-      }
+      }.compact
     end
 
     def make_schema(texts_count)

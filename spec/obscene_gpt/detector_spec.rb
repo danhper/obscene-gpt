@@ -12,7 +12,7 @@ RSpec.describe ObsceneGpt::Detector do
   describe "#initialize" do
     it "creates a detector with the given API key" do
       expect(detector.client).to be_a(OpenAI::Client)
-      expect(detector.model).to eq("gpt-4.1-nano")
+      expect(detector.model).to eq("gpt-6-luna")
     end
 
     it "uses environment variable when no API key is provided" do
@@ -24,6 +24,15 @@ RSpec.describe ObsceneGpt::Detector do
     it "allows custom model selection" do
       detector = described_class.new(api_key: api_key, model: "gpt-3.5-turbo")
       expect(detector.model).to eq("gpt-3.5-turbo")
+    end
+
+    it "uses the configured reasoning effort by default" do
+      expect(detector.reasoning_effort).to eq("none")
+    end
+
+    it "allows custom reasoning effort" do
+      detector = described_class.new(api_key: api_key, reasoning_effort: "low")
+      expect(detector.reasoning_effort).to eq("low")
     end
 
     it "allows custom schema and prompt" do
@@ -74,6 +83,28 @@ RSpec.describe ObsceneGpt::Detector do
       expect(detector.client).to receive(:responses).and_return(
         double(create: mock_response),
       )
+
+      detector.detect("test text")
+    end
+
+    it "sends the reasoning effort" do
+      responses = double
+      allow(detector.client).to receive(:responses).and_return(responses)
+      expect(responses).to receive(:create)
+        .with(parameters: hash_including(model: "gpt-6-luna", reasoning: { effort: "none" }))
+        .and_return(mock_response)
+
+      detector.detect("test text")
+    end
+
+    it "omits the reasoning parameter when reasoning effort is nil" do
+      ObsceneGpt.configuration.reasoning_effort = nil
+      detector = described_class.new(api_key: api_key)
+      responses = double
+      allow(detector.client).to receive(:responses).and_return(responses)
+      expect(responses).to receive(:create)
+        .with(parameters: hash_excluding(:reasoning))
+        .and_return(mock_response)
 
       detector.detect("test text")
     end
