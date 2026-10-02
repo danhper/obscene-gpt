@@ -9,7 +9,8 @@ RSpec.describe ObsceneGpt::Configuration do
   describe "#initialize" do
     it "sets default values" do
       expect(ObsceneGpt.configuration.api_key).to eq(ENV.fetch("OPENAI_API_KEY", nil))
-      expect(ObsceneGpt.configuration.model).to eq("gpt-4.1-nano")
+      expect(ObsceneGpt.configuration.model).to eq("gpt-6-luna")
+      expect(ObsceneGpt.configuration.reasoning_effort).to eq("none")
       expect(ObsceneGpt.configuration.prompt).to eq(ObsceneGpt::Prompts::SYSTEM_PROMPT)
       expect(ObsceneGpt.configuration.schema).to eq(ObsceneGpt::Prompts::SIMPLE_SCHEMA)
       expect(ObsceneGpt.configuration.test_mode).to be false

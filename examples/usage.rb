@@ -3,7 +3,7 @@ require "obscene_gpt"
 # Configure the gem globally (do this once in your app initialization)
 ObsceneGpt.configure do |config|
   # config.api_key = "your-openai-api-key-here"
-  config.model = "gpt-4.1-nano"
+  config.model = "gpt-6-luna"
   config.schema = ObsceneGpt::Prompts::FULL_SCHEMA
 end
 
